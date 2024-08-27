@@ -1,3 +1,6 @@
+locals {
+  sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
+}
 
 # Encryption key for the Backup Vault
 resource "aws_kms_key" "bkup_key" {
@@ -109,8 +112,4 @@ resource "aws_backup_vault_notifications" "bkup_vault_notifications" {
   backup_vault_name   = aws_backup_vault.bkup_vault.name
   sns_topic_arn       = local.sns_topic_arn
   backup_vault_events = var.notification_events
-}
-
-locals {
-  sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
 }
