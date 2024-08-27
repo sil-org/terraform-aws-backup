@@ -1,3 +1,6 @@
+locals {
+  sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
+}
 
 # Encryption key for the Backup Vault
 resource "aws_kms_key" "bkup_key" {
@@ -27,7 +30,7 @@ resource "aws_backup_plan" "bkup_plan" {
   rule {
     rule_name         = "${var.app_name}-${var.app_env}-db-backup-rule"
     target_vault_name = aws_backup_vault.bkup_vault.name
-    schedule          = "cron(${var.backup_cron_schedule})"
+    schedule          = var.backup_schedule
     completion_window = 120 # 2 hours (in minutes)
 
     lifecycle {
@@ -76,7 +79,7 @@ resource "aws_iam_role_policy_attachment" "bkup_policy_attachment" {
 # Create notifications
 resource "aws_sns_topic" "bkup_sns_topic" {
   count = var.sns_topic_arn == "" ? 1 : 0
-  name  = "backup-vault-events"
+  name  = var.sns_topic_name
 }
 
 data "aws_iam_policy_document" "bkup_sns_policy" {
@@ -109,8 +112,4 @@ resource "aws_backup_vault_notifications" "bkup_vault_notifications" {
   backup_vault_name   = aws_backup_vault.bkup_vault.name
   sns_topic_arn       = local.sns_topic_arn
   backup_vault_events = var.notification_events
-}
-
-locals {
-  sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
 }
