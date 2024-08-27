@@ -22,7 +22,7 @@ module "backup_rds" {
   app_name            = var.app_name
   app_env             = var.app_env
   source_arns         = ["arn:aws:rds:us-east-1:123456789012:db:my-db"]
-  backup_schedule     = "11 1 * * ? *"
+  backup_schedule     = "cron(11 1 * * ? *)"
   notification_events = ["BACKUP_JOB_STARTED", "BACKUP_JOB_COMPLETED", "BACKUP_JOB_FAILED", "RESTORE_JOB_COMPLETED"]
 }
 ```
