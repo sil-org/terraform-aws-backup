@@ -12,7 +12,7 @@ variable "app_env" {
 }
 
 variable "source_arns" {
-  description = "The arn's of the source databases"
+  description = "Resource identifiers in 'ARN' format (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference-arns.html)"
   type        = list(string)
 }
 
@@ -27,7 +27,7 @@ variable "backup_schedule" {
 }
 
 variable "notification_events" {
-  description = "The arn's of the source databases"
+  description = "An array of events that indicate the status of jobs to back up resources to the backup vault."
   type        = list(string)
   default     = ["BACKUP_JOB_STARTED", "BACKUP_JOB_COMPLETED", "BACKUP_JOB_FAILED", "RESTORE_JOB_COMPLETED"]
 }
