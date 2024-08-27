@@ -1,26 +1,19 @@
 
-/*
- * TODO: complete these basic instantiations of the module, with the base purpose of
- * validating the syntax of module code automatically when pushed to version control.
- * One instance should use the minimum allowable set of inputs. The other should have
- * the full complement of inputs. You may also wish to include module outputs to
- * enforce the presence of module outputs.
- */
-
 module "minimal" {
-  source = "../"
-
-  variable_name = "foo"
+  source      = "../"
+  app_name    = "minimal"
+  app_env     = "test"
+  source_arns = ["arn:aws:rds:us-east-1:123456789012:db:my-db"]
 }
 
 module "full" {
-  source = "../"
-
-  variable_name = "foo"
-}
-
-output "an_output" {
-  value = module.minimal.output_name
+  source              = "../"
+  app_name            = "full"
+  app_env             = "test"
+  source_arns         = ["arn:aws:rds:us-east-1:123456789012:db:my-db"]
+  backup_schedule     = "cron(11 1 * * ? *)"
+  notification_events = ["BACKUP_JOB_STARTED", "BACKUP_JOB_COMPLETED", "BACKUP_JOB_FAILED", "RESTORE_JOB_COMPLETED"]
+  sns_topic_arn       = "arn:aws:sns:us-east-1:123456789012:backup-vault-events"
 }
 
 provider "aws" {
@@ -29,11 +22,10 @@ provider "aws" {
 
 terraform {
   required_version = ">= 1.0"
-
   required_providers {
     aws = {
+      version = "~> 4.0"
       source  = "hashicorp/aws"
-      version = "~> 5.0"
     }
   }
 }
