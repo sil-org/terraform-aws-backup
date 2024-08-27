@@ -2,23 +2,13 @@
  * Required variables
  */
 variable "app_name" {
-  type = string
+  description = "Short app name used in the name of managed resources"
+  type        = string
 }
 
 variable "app_env" {
-  type = string
-}
-
-variable "aws_access_key" {
-  description = "not needed, not used"
+  description = "Environment name used in the name of managed resources, e.g. prod, stg"
   type        = string
-  default     = ""
-}
-
-variable "aws_secret_key" {
-  description = "not needed, not used"
-  type        = string
-  default     = ""
 }
 
 variable "source_arns" {
