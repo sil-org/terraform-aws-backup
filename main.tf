@@ -27,7 +27,7 @@ resource "aws_backup_plan" "bkup_plan" {
   rule {
     rule_name         = "${var.app_name}-${var.app_env}-db-backup-rule"
     target_vault_name = aws_backup_vault.bkup_vault.name
-    schedule          = "cron(${var.backup_cron_schedule})"
+    schedule          = var.backup_schedule
     completion_window = 120 # 2 hours (in minutes)
 
     lifecycle {
