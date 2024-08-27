@@ -79,7 +79,7 @@ resource "aws_iam_role_policy_attachment" "bkup_policy_attachment" {
 # Create notifications
 resource "aws_sns_topic" "bkup_sns_topic" {
   count = var.sns_topic_arn == "" ? 1 : 0
-  name  = "backup-vault-events"
+  name  = var.sns_topic_name
 }
 
 data "aws_iam_policy_document" "bkup_sns_policy" {
