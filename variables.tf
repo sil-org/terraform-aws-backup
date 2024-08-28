@@ -43,3 +43,9 @@ variable "sns_topic_name" {
   type        = string
   default     = "backup-vault-events"
 }
+
+variable "sns_email_subscription" {
+  description = "Optional: email address to receive SNS events"
+  type        = string
+  default     = ""
+}
