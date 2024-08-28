@@ -113,3 +113,11 @@ resource "aws_backup_vault_notifications" "bkup_vault_notifications" {
   sns_topic_arn       = local.sns_topic_arn
   backup_vault_events = var.notification_events
 }
+
+resource "aws_sns_topic_subscription" "this" {
+  count = var.sns_email_subscription == "" ? 0 : 1
+
+  topic_arn = local.sns_topic_arn
+  protocol  = "email"
+  endpoint  = var.sns_email_subscription
+}
