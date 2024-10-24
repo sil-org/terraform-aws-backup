@@ -1,5 +1,32 @@
 locals {
   sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
+
+  # List of supported resource types for cold storage
+  supported_resource_types = [
+    "arn:aws:dynamodb:*:*:table/*",
+    "arn:aws:elasticfilesystem:*:*:file-system/*",
+    "arn:aws:timestream:*:*:database/*",
+    "arn:aws:backup:*:*:backup-vault/*",
+    "arn:aws:backup:*:*:recovery-point/*",
+    "arn:aws:ebs:*:*:snapshot/*"
+  ]
+
+  # Validate if source ARNs are supported for cold storage
+  unsupported_resources = [
+    for arn in var.source_arns : arn if !(any(local.supported_resource_types, arn))
+  ]
+
+  # Error message if unsupported resources are found
+  error_message = "Error: The following ARNs are not supported for cold storage: ${join(", ", local.unsupported_resources)}."
+}
+
+# Check for unsupported resources
+resource "null_resource" "unsupported_resource_validation" {
+  count = length(local.unsupported_resources) > 0 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "echo '${local.error_message}' && exit 1"
+  }
 }
 
 # Encryption key for the Backup Vault
@@ -34,8 +61,8 @@ resource "aws_backup_plan" "bkup_plan" {
     completion_window = 120 # 2 hours (in minutes)
 
     lifecycle {
-      cold_storage_after = 7   # a week in days
-      delete_after       = 100 # must be at least 90 days more than cold_storage_after
+      cold_storage_after = var.cold_storage_after
+      delete_after       = var.delete_after
     }
   }
 
@@ -68,7 +95,8 @@ resource "aws_iam_role" "bkup_role" {
           }
         }
       ]
-  })
+    }
+  )
 }
 
 resource "aws_iam_role_policy_attachment" "bkup_policy_attachment" {
