@@ -59,5 +59,5 @@ variable "cold_storage_after" {
 variable "delete_after" {
   description = "Number of days after which the backup is deleted"
   type        = number
-  default     = null
+  default     = 100
 }
