@@ -5,7 +5,7 @@ locals {
     "arn:aws:dynamodb:*:*:table/*",
     "arn:aws:ec2:*:*:volume/*",
     "arn:aws:elasticfilesystem:*:*:file-system/*",
-    "arn:aws:ec2:*:*:instance/*",  # For SAP HANA on EC2
+    "arn:aws:ec2:*:*:instance/*", # For SAP HANA on EC2
     "arn:aws:timestream:*:*:database/*",
     "arn:aws:backup:*:*:backup-vault/*",
     "arn:aws:backup:*:*:recovery-point/*"
@@ -16,7 +16,7 @@ locals {
 
   # Identify resources that don't support cold storage
   cold_storage_unsupported_resources = [
-    for arn in var.source_arns : arn 
+    for arn in var.source_arns : arn
     if !can(regex(join("|", local.supported_resource_types), arn))
   ]
 
