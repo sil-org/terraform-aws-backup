@@ -62,7 +62,7 @@ resource "aws_backup_vault" "bkup_vault" {
   }
 }
 
-#Main backup rule for all resources that support cold storage
+# Create the Backup plan
 resource "aws_backup_plan" "bkup_plan" {
   name = "${var.app_name}-${var.app_env}-db-backup-plan"
 
