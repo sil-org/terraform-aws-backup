@@ -1,47 +1,55 @@
 locals {
-  # Define resource types that support cold storage
+  # Define key resource types that support cold storage
   supported_resource_types = [
-    "arn:aws:cloudformation:*:*:stack/*",
-    "arn:aws:dynamodb:*:*:table/*",
-    "arn:aws:ec2:*:*:volume/*",
-    "arn:aws:elasticfilesystem:*:*:file-system/*",
-    "arn:aws:ec2:*:*:instance/*", # For SAP HANA on EC2
-    "arn:aws:timestream:*:*:database/*",
-    "arn:aws:backup:*:*:backup-vault/*",
-    "arn:aws:backup:*:*:recovery-point/*"
+    "cloudformation",
+    "dynamodb",
+    "ec2",
+    "elasticfilesystem",
+    "timestream",
+    "backup"
   ]
 
   # Determine the SNS topic ARN to use
   sns_topic_arn = var.sns_topic_arn == "" ? aws_sns_topic.bkup_sns_topic[0].arn : var.sns_topic_arn
 
   # Identify resources that don't support cold storage
-  cold_storage_unsupported_resources = [
+  cold_storage_unsupported_resources = var.enable_cold_storage_check ? [
     for arn in var.source_arns : arn
-    if !can(regex(join("|", local.supported_resource_types), arn))
-  ]
+    if !can(contains(local.supported_resource_types, split(":", arn)[2]))
+  ] : []
 
-  # Error message for resources that don't support cold storage
-  cold_storage_error_message = "Error: Cold storage is not supported for the following resources: ${join(", ", local.cold_storage_unsupported_resources)}."
+ # Error message for resources that don't support cold storage
+  cold_storage_error_message = (
+    var.enable_cold_storage_check && 
+    var.cold_storage_after != null && 
+    length(local.cold_storage_unsupported_resources) > 0
+  ) ? "Error: cold storage is not supported for the following resources: ${join(", ", local.cold_storage_unsupported_resources)}." : null
 }
 
 # Validation resource to check if cold storage is enabled for unsupported resources
-resource "null_resource" "cold_storage_validation" {
-  count = var.cold_storage_after != null && length(local.cold_storage_unsupported_resources) > 0 ? 1 : 0
-
-  provisioner "local-exec" {
-    command = "echo '${local.cold_storage_error_message}' && exit 1"
+check "cold_storage_validation" {
+  assert {
+    condition = (
+      !var.enable_cold_storage_check || 
+      var.cold_storage_after == null || 
+      length(local.cold_storage_unsupported_resources) == 0
+    )
+    error_message = (
+      var.enable_cold_storage_check && 
+      var.cold_storage_after != null && 
+      length(local.cold_storage_unsupported_resources) > 0
+    ) ? "Error: Cold storage is enabled and configured, but the following resources do not support it: ${join(", ", local.cold_storage_unsupported_resources)}. Please review your configuration." : "Cold storage configuration is valid."
   }
 }
 
 # Validation to ensure delete_after is at least 90 days more than cold_storage_after
-resource "null_resource" "lifecycle_validation" {
-  count = var.cold_storage_after != null && var.delete_after != null && (var.delete_after - var.cold_storage_after) < 90 ? 1 : 0
-
-  provisioner "local-exec" {
-    command = "echo 'Error: delete_after must be at least 90 days more than cold_storage_after' && exit 1"
+check "lifecycle_validation" {
+  assert {
+    condition     = var.cold_storage_after == null || var.delete_after == null || (var.delete_after - var.cold_storage_after) >= 90
+    error_message = "Error: delete_after must be at least 90 days more than cold_storage_after"
   }
 }
-#Encryption key for the Backup Vault
+# Encryption key for the Backup Vault
 resource "aws_kms_key" "bkup_key" {
   description = "${var.app_name}-${var.app_env} backup vault key"
 
@@ -51,7 +59,7 @@ resource "aws_kms_key" "bkup_key" {
   }
 }
 
-#Create the Backup vault
+# Create the Backup vault
 resource "aws_backup_vault" "bkup_vault" {
   name        = "${var.app_name}-${var.app_env}-db-backup-vault"
   kms_key_arn = aws_kms_key.bkup_key.arn
@@ -84,7 +92,7 @@ resource "aws_backup_plan" "bkup_plan" {
   }
 }
 
-#Select objects to be backed up
+# Select objects to be backed up
 resource "aws_backup_selection" "bkup_selection" {
   name         = "${var.app_name}-${var.app_env}-db-backup-selection"
   plan_id      = aws_backup_plan.bkup_plan.id
@@ -92,7 +100,7 @@ resource "aws_backup_selection" "bkup_selection" {
   resources    = var.source_arns
 }
 
-#Create the IAM role for backups
+# Create the IAM role for backups
 resource "aws_iam_role" "bkup_role" {
   name = "${var.app_name}-${var.app_env}-db-backup-role"
   assume_role_policy = jsonencode(
