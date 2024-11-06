@@ -49,3 +49,21 @@ variable "sns_email_subscription" {
   type        = string
   default     = ""
 }
+
+variable "cold_storage_after" {
+  description = "Number of days after which the backup is moved to cold storage"
+  type        = number
+  default     = 7
+}
+
+variable "delete_after" {
+  description = "Number of days after which the backup is deleted"
+  type        = number
+  default     = 100
+}
+
+variable "enable_cold_storage_check" {
+  description = "Whether to perform a check for cold storage support on the provided resources"
+  type        = bool
+  default     = false
+}
