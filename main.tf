@@ -18,10 +18,10 @@ locals {
     if !can(contains(local.supported_resource_types, split(":", arn)[2]))
   ] : []
 
- # Error message for resources that don't support cold storage
+  # Error message for resources that don't support cold storage
   cold_storage_error_message = (
-    var.enable_cold_storage_check && 
-    var.cold_storage_after != null && 
+    var.enable_cold_storage_check &&
+    var.cold_storage_after != null &&
     length(local.cold_storage_unsupported_resources) > 0
   ) ? "Error: cold storage is not supported for the following resources: ${join(", ", local.cold_storage_unsupported_resources)}." : null
 }
@@ -30,13 +30,13 @@ locals {
 check "cold_storage_validation" {
   assert {
     condition = (
-      !var.enable_cold_storage_check || 
-      var.cold_storage_after == null || 
+      !var.enable_cold_storage_check ||
+      var.cold_storage_after == null ||
       length(local.cold_storage_unsupported_resources) == 0
     )
     error_message = (
-      var.enable_cold_storage_check && 
-      var.cold_storage_after != null && 
+      var.enable_cold_storage_check &&
+      var.cold_storage_after != null &&
       length(local.cold_storage_unsupported_resources) > 0
     ) ? "Error: Cold storage is enabled and configured, but the following resources do not support it: ${join(", ", local.cold_storage_unsupported_resources)}. Please review your configuration." : "Cold storage configuration is valid."
   }
