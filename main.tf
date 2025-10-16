@@ -17,13 +17,6 @@ locals {
     for arn in var.source_arns : arn
     if !contains(local.supported_resource_types, split(":", arn)[2])
   ] : []
-
-  # Error message for resources that don't support cold storage
-  cold_storage_error_message = (
-    var.enable_cold_storage_check &&
-    var.cold_storage_after != null &&
-    length(local.cold_storage_unsupported_resources) > 0
-  ) ? "Error: cold storage is not supported for the following resources: ${join(", ", local.cold_storage_unsupported_resources)}." : null
 }
 
 # Validation resource to check if cold storage is enabled for unsupported resources
