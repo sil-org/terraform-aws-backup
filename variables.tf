@@ -51,7 +51,7 @@ variable "sns_email_subscription" {
 }
 
 variable "cold_storage_after" {
-  description = "Number of days after which the backup is moved to cold storage"
+  description = "Number of days after which the backup is moved to cold storage. Set to 0 (zero) to disable."
   type        = number
   default     = 7
 }
