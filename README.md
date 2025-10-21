@@ -1,6 +1,6 @@
 # Terraform Module for AWS Backup
 
-This module is used to create scheduled backups of AWS resources. It was previously published at https://github.com/silinternational/terraform-modules/aws/backup/rds.
+This module is used to create scheduled backups of AWS resources. It was previously published at https://github.com/sil-org/terraform-modules/aws/backup/rds.
 
 ## Resources Managed
 
@@ -12,13 +12,13 @@ This module is used to create scheduled backups of AWS resources. It was previou
 * SNS Topic and Policy
 * Backup Vault Notifications
 
-This module is published in [Terraform Registry](https://registry.terraform.io/modules/silinternational/backup/aws/latest).
+This module is published in [Terraform Registry](https://registry.terraform.io/modules/sil-org/backup/aws/latest).
 
 ## Example Usage
 
 ```hcl
 module "backup_rds" {
-  source              = "silinternational/backup/aws"
+  source              = "sil-org/backup/aws"
   app_name            = var.app_name
   app_env             = var.app_env
   source_arns         = ["arn:aws:rds:us-east-1:123456789012:db:my-db"]
