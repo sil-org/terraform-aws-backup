@@ -23,6 +23,7 @@ variable "source_arns" {
 
 variable "backup_schedule" {
   description = "Backup schedule in AWS Cloudwatch Event Bridge format, e.g.\"cron(11 1 * * ? *)\""
+  type        = string
   default     = "cron(11 1 * * ? *)" # Every day at 01:11 UTC
 }
 
